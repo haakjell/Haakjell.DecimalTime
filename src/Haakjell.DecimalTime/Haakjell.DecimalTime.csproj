@@ -3,6 +3,11 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Version>0.1.0</Version>
+        <IsPackable>true</IsPackable>
+        <PackageId>Haakjell.DecimalTime</PackageId>
+        <Authors>haakjell</Authors>
+        <Description>Provides time on the decimal time format</Description>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
