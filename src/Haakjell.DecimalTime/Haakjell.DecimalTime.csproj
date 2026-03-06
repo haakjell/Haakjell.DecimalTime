@@ -1,14 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Version>0.1.0</Version>
+        <Nullable>enable</Nullable>
+        <Version>1.0.0</Version>
         <IsPackable>true</IsPackable>
+
+        <!-- NuGet Package Metadata -->
         <PackageId>Haakjell.DecimalTime</PackageId>
         <Authors>haakjell</Authors>
-        <Description>Provides time on the decimal time format</Description>
-        <Nullable>enable</Nullable>
+        <Description>A .NET library providing decimal (metric) time functionality. In decimal time: 1 day = 10 hours = 1,000 minutes = 100,000 seconds. Includes DecDateTime and DecTimeSpan types with full comparison, arithmetic, and conversion support.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>decimal-time;metric-time;time;datetime;timespan</PackageTags>
+        <RepositoryUrl>https://github.com/haakjell/Haakjell.DecimalTime</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <ProjectUrl>https://github.com/haakjell/Haakjell.DecimalTime</ProjectUrl>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
 </Project>
