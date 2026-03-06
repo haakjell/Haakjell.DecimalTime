@@ -24,11 +24,24 @@ public readonly struct DecTimeOnly : IComparable<DecTimeOnly>, IEquatable<DecTim
     }
 
     /// <summary>
-    /// Initializes a new instance from standard time components.
+    /// Initializes a new instance from decimal time components.
     /// </summary>
-    public DecTimeOnly(int hour, int minute, int second = 0, int millisecond = 0)
+    /// <param name="decimalHour">The decimal hour (0-9).</param>
+    /// <param name="decimalMinute">The decimal minute (0-99).</param>
+    /// <param name="decimalSecond">The decimal second (0-99).</param>
+    public DecTimeOnly(int decimalHour, int decimalMinute, int decimalSecond = 0)
     {
-        _value = new TimeOnly(hour, minute, second, millisecond);
+        if (decimalHour < 0 || decimalHour > 9)
+            throw new ArgumentOutOfRangeException(nameof(decimalHour), "Decimal hour must be between 0 and 9.");
+        if (decimalMinute < 0 || decimalMinute > 99)
+            throw new ArgumentOutOfRangeException(nameof(decimalMinute), "Decimal minute must be between 0 and 99.");
+        if (decimalSecond < 0 || decimalSecond > 99)
+            throw new ArgumentOutOfRangeException(nameof(decimalSecond), "Decimal second must be between 0 and 99.");
+
+        var totalDecimalSeconds = decimalHour * 10000.0 + decimalMinute * 100.0 + decimalSecond;
+        var totalStandardSeconds = totalDecimalSeconds * InverseConversionFactor;
+
+        _value = TimeOnly.FromTimeSpan(TimeSpan.FromSeconds(totalStandardSeconds));
     }
 
     #endregion
@@ -87,19 +100,7 @@ public readonly struct DecTimeOnly : IComparable<DecTimeOnly>, IEquatable<DecTim
 
     #endregion
 
-    #region Standard Time Properties (pass-through)
-
-    /// <summary>Gets the standard hour component (0-23).</summary>
-    public int Hour => _value.Hour;
-
-    /// <summary>Gets the standard minute component (0-59).</summary>
-    public int Minute => _value.Minute;
-
-    /// <summary>Gets the standard second component (0-59).</summary>
-    public int Second => _value.Second;
-
-    /// <summary>Gets the standard millisecond component (0-999).</summary>
-    public int Millisecond => _value.Millisecond;
+    #region Infrastructure Properties
 
     /// <summary>Gets the ticks representing this time.</summary>
     public long Ticks => _value.Ticks;
@@ -127,6 +128,12 @@ public readonly struct DecTimeOnly : IComparable<DecTimeOnly>, IEquatable<DecTim
     /// Gets the decimal second component (0-99).
     /// </summary>
     public int DecimalSecond => (int)TotalDecimalSeconds % 100;
+
+    /// <summary>
+    /// Gets the decimal millisecond component (0-999).
+    /// Represents 1/1000th of a decimal second.
+    /// </summary>
+    public int DecimalMillisecond => (int)((TotalDecimalSeconds - (int)TotalDecimalSeconds) * 1000);
 
     #endregion
 

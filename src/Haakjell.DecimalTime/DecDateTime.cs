@@ -24,11 +24,30 @@ public readonly struct DecDateTime : IComparable<DecDateTime>, IEquatable<DecDat
     }
 
     /// <summary>
-    /// Initializes a new instance from standard time components.
+    /// Initializes a new instance from decimal time components.
     /// </summary>
-    public DecDateTime(int year, int month, int day, int hour, int minute, int second)
+    /// <param name="year">The year.</param>
+    /// <param name="month">The month (1-12).</param>
+    /// <param name="day">The day of month.</param>
+    /// <param name="decimalHour">The decimal hour (0-9).</param>
+    /// <param name="decimalMinute">The decimal minute (0-99).</param>
+    /// <param name="decimalSecond">The decimal second (0-99).</param>
+    public DecDateTime(int year, int month, int day, int decimalHour, int decimalMinute, int decimalSecond)
     {
-        _value = new DateTime(year, month, day, hour, minute, second);
+        if (decimalHour < 0 || decimalHour > 9)
+            throw new ArgumentOutOfRangeException(nameof(decimalHour), "Decimal hour must be between 0 and 9.");
+        if (decimalMinute < 0 || decimalMinute > 99)
+            throw new ArgumentOutOfRangeException(nameof(decimalMinute), "Decimal minute must be between 0 and 99.");
+        if (decimalSecond < 0 || decimalSecond > 99)
+            throw new ArgumentOutOfRangeException(nameof(decimalSecond), "Decimal second must be between 0 and 99.");
+
+        var totalDecimalSeconds = decimalHour * 10000.0 + decimalMinute * 100.0 + decimalSecond;
+        var totalStandardSeconds = totalDecimalSeconds * InverseConversionFactor;
+
+        var date = new DateTime(year, month, day);
+        var timeSpan = TimeSpan.FromSeconds(totalStandardSeconds);
+
+        _value = date.Add(timeSpan);
     }
 
     /// <summary>
@@ -128,28 +147,13 @@ public readonly struct DecDateTime : IComparable<DecDateTime>, IEquatable<DecDat
 
     #endregion
 
-    #region Standard Time Properties (pass-through)
-
-    /// <summary>Gets the standard hour component (0-23).</summary>
-    public int Hour => _value.Hour;
-
-    /// <summary>Gets the standard minute component (0-59).</summary>
-    public int Minute => _value.Minute;
-
-    /// <summary>Gets the standard second component (0-59).</summary>
-    public int Second => _value.Second;
-
-    /// <summary>Gets the standard millisecond component (0-999).</summary>
-    public int Millisecond => _value.Millisecond;
+    #region Infrastructure Properties
 
     /// <summary>Gets the ticks representing this date and time.</summary>
     public long Ticks => _value.Ticks;
 
     /// <summary>Gets the DateTimeKind (Local, Utc, or Unspecified).</summary>
     public DateTimeKind Kind => _value.Kind;
-
-    /// <summary>Gets the time of day as a TimeSpan.</summary>
-    public TimeSpan TimeOfDay => _value.TimeOfDay;
 
     #endregion
 
@@ -174,6 +178,17 @@ public readonly struct DecDateTime : IComparable<DecDateTime>, IEquatable<DecDat
     /// Gets the decimal second component (0-99).
     /// </summary>
     public int DecimalSecond => (int)TotalDecimalSeconds % 100;
+
+    /// <summary>
+    /// Gets the decimal millisecond component (0-999).
+    /// Represents 1/1000th of a decimal second.
+    /// </summary>
+    public int DecimalMillisecond => (int)((TotalDecimalSeconds - (int)TotalDecimalSeconds) * 1000);
+
+    /// <summary>
+    /// Gets the time of day as a DecTimeSpan.
+    /// </summary>
+    public DecTimeSpan DecimalTimeOfDay => DecTimeSpan.FromTimeSpan(_value.TimeOfDay);
 
     #endregion
 

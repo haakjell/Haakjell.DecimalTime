@@ -18,14 +18,14 @@ public class DecDateTimeTests
     [Fact]
     public void Constructor_FromComponents_CreatesCorrectDateTime()
     {
-        var decDateTime = new DecDateTime(2024, 6, 15, 12, 30, 45);
+        var decDateTime = new DecDateTime(2024, 6, 15, 5, 21, 27);
 
         Assert.Equal(2024, decDateTime.Year);
         Assert.Equal(6, decDateTime.Month);
         Assert.Equal(15, decDateTime.Day);
-        Assert.Equal(12, decDateTime.Hour);
-        Assert.Equal(30, decDateTime.Minute);
-        Assert.Equal(45, decDateTime.Second);
+        Assert.Equal(5, decDateTime.DecimalHour);
+        Assert.Equal(21, decDateTime.DecimalMinute);
+        Assert.Equal(27, decDateTime.DecimalSecond);
     }
 
     [Fact]
@@ -35,6 +35,21 @@ public class DecDateTimeTests
         var decDateTime = new DecDateTime(dateTime.Ticks);
 
         Assert.Equal(dateTime, decDateTime.ToDateTime());
+    }
+
+    [Fact]
+    public void Constructor_FromDecimalComponents_ConvertsToStandardTimeCorrectly()
+    {
+        // Construct with decimal time: 5:00:00 decimal = 12:00:00 standard (noon)
+        var decDateTime = new DecDateTime(2024, 6, 15, 5, 0, 0);
+        var standardTime = decDateTime.ToDateTime();
+
+        Assert.Equal(2024, standardTime.Year);
+        Assert.Equal(6, standardTime.Month);
+        Assert.Equal(15, standardTime.Day);
+        Assert.Equal(12, standardTime.Hour);
+        Assert.Equal(0, standardTime.Minute);
+        Assert.Equal(0, standardTime.Second);
     }
 
     #endregion
@@ -65,9 +80,9 @@ public class DecDateTimeTests
     {
         var decToday = DecDateTime.Today;
 
-        Assert.Equal(0, decToday.Hour);
-        Assert.Equal(0, decToday.Minute);
-        Assert.Equal(0, decToday.Second);
+        Assert.Equal(0, decToday.ToDateTime().Hour);
+        Assert.Equal(0, decToday.ToDateTime().Minute);
+        Assert.Equal(0, decToday.ToDateTime().Second);
         Assert.Equal(0, decToday.DecimalHour);
     }
 
@@ -101,7 +116,7 @@ public class DecDateTimeTests
     [Fact]
     public void Noon_IsFiveDecimalHours()
     {
-        var noon = new DecDateTime(2024, 1, 1, 12, 0, 0);
+        var noon = new DecDateTime(2024, 1, 1, 5, 0, 0);
 
         Assert.Equal(5, noon.DecimalHour);
         Assert.Equal(0, noon.DecimalMinute);
@@ -113,7 +128,7 @@ public class DecDateTimeTests
     public void EndOfDay_IsNineDecimalHours()
     {
         // 23:59:59 should be close to 9:99:99 in decimal time
-        var almostMidnight = new DecDateTime(2024, 1, 1, 23, 59, 59);
+        var almostMidnight = new DecDateTime(new DateTime(2024, 1, 1, 23, 59, 59));
 
         Assert.Equal(9, almostMidnight.DecimalHour);
         Assert.Equal(99, almostMidnight.DecimalMinute);
@@ -123,7 +138,7 @@ public class DecDateTimeTests
     [Fact]
     public void SixAM_Is2Point5DecimalHours()
     {
-        var sixAm = new DecDateTime(2024, 1, 1, 6, 0, 0);
+        var sixAm = new DecDateTime(2024, 1, 1, 2, 50, 0);
 
         Assert.Equal(2, sixAm.DecimalHour);
         Assert.Equal(50, sixAm.DecimalMinute);
@@ -139,7 +154,7 @@ public class DecDateTimeTests
         int hour, int minute, int second,
         int expectedDecHour, int expectedDecMin, int expectedDecSec)
     {
-        var decDateTime = new DecDateTime(2024, 1, 1, hour, minute, second);
+        var decDateTime = new DecDateTime(new DateTime(2024, 1, 1, hour, minute, second));
 
         Assert.Equal(expectedDecHour, decDateTime.DecimalHour);
         Assert.Equal(expectedDecMin, decDateTime.DecimalMinute);
@@ -155,8 +170,8 @@ public class DecDateTimeTests
     {
         var decDateTime = DecDateTime.FromDecimalTime(2024, 1, 1, 5, 0, 0);
 
-        Assert.Equal(12, decDateTime.Hour);
-        Assert.Equal(0, decDateTime.Minute);
+        Assert.Equal(12, decDateTime.ToDateTime().Hour);
+        Assert.Equal(0, decDateTime.ToDateTime().Minute);
     }
 
     [Fact]
@@ -164,9 +179,9 @@ public class DecDateTimeTests
     {
         var decDateTime = DecDateTime.FromDecimalTime(2024, 1, 1, 0, 0, 0);
 
-        Assert.Equal(0, decDateTime.Hour);
-        Assert.Equal(0, decDateTime.Minute);
-        Assert.Equal(0, decDateTime.Second);
+        Assert.Equal(0, decDateTime.ToDateTime().Hour);
+        Assert.Equal(0, decDateTime.ToDateTime().Minute);
+        Assert.Equal(0, decDateTime.ToDateTime().Second);
     }
 
     [Fact]
@@ -220,13 +235,13 @@ public class DecDateTimeTests
     [Fact]
     public void Date_ReturnsDateWithMidnight()
     {
-        var decDateTime = new DecDateTime(2024, 6, 15, 14, 30, 45);
+        var decDateTime = new DecDateTime(new DateTime(2024, 6, 15, 14, 30, 45));
         var dateOnly = decDateTime.Date;
 
         Assert.Equal(2024, dateOnly.Year);
         Assert.Equal(6, dateOnly.Month);
         Assert.Equal(15, dateOnly.Day);
-        Assert.Equal(0, dateOnly.Hour);
+        Assert.Equal(0, dateOnly.ToDateTime().Hour);
         Assert.Equal(0, dateOnly.DecimalHour);
     }
 
@@ -237,8 +252,8 @@ public class DecDateTimeTests
     [Fact]
     public void Equals_SameDateTime_ReturnsTrue()
     {
-        var dt1 = new DecDateTime(2024, 6, 15, 12, 0, 0);
-        var dt2 = new DecDateTime(2024, 6, 15, 12, 0, 0);
+        var dt1 = new DecDateTime(2024, 6, 15, 5, 0, 0);
+        var dt2 = new DecDateTime(2024, 6, 15, 5, 0, 0);
 
         Assert.True(dt1.Equals(dt2));
         Assert.True(dt1 == dt2);
@@ -248,8 +263,8 @@ public class DecDateTimeTests
     [Fact]
     public void Equals_DifferentDateTime_ReturnsFalse()
     {
-        var dt1 = new DecDateTime(2024, 6, 15, 12, 0, 0);
-        var dt2 = new DecDateTime(2024, 6, 15, 13, 0, 0);
+        var dt1 = new DecDateTime(2024, 6, 15, 5, 0, 0);
+        var dt2 = new DecDateTime(2024, 6, 15, 5, 41, 66);
 
         Assert.False(dt1.Equals(dt2));
         Assert.False(dt1 == dt2);
@@ -259,8 +274,8 @@ public class DecDateTimeTests
     [Fact]
     public void CompareTo_EarlierDate_ReturnsNegative()
     {
-        var earlier = new DecDateTime(2024, 6, 15, 12, 0, 0);
-        var later = new DecDateTime(2024, 6, 15, 13, 0, 0);
+        var earlier = new DecDateTime(2024, 6, 15, 5, 0, 0);
+        var later = new DecDateTime(2024, 6, 15, 5, 41, 66);
 
         Assert.True(earlier.CompareTo(later) < 0);
         Assert.True(earlier < later);
@@ -270,8 +285,8 @@ public class DecDateTimeTests
     [Fact]
     public void CompareTo_LaterDate_ReturnsPositive()
     {
-        var earlier = new DecDateTime(2024, 6, 15, 12, 0, 0);
-        var later = new DecDateTime(2024, 6, 15, 13, 0, 0);
+        var earlier = new DecDateTime(2024, 6, 15, 5, 0, 0);
+        var later = new DecDateTime(2024, 6, 15, 5, 41, 66);
 
         Assert.True(later.CompareTo(earlier) > 0);
         Assert.True(later > earlier);
@@ -281,8 +296,8 @@ public class DecDateTimeTests
     [Fact]
     public void CompareTo_SameDate_ReturnsZero()
     {
-        var dt1 = new DecDateTime(2024, 6, 15, 12, 0, 0);
-        var dt2 = new DecDateTime(2024, 6, 15, 12, 0, 0);
+        var dt1 = new DecDateTime(2024, 6, 15, 5, 0, 0);
+        var dt2 = new DecDateTime(2024, 6, 15, 5, 0, 0);
 
         Assert.Equal(0, dt1.CompareTo(dt2));
         Assert.True(dt1 <= dt2);
@@ -292,8 +307,8 @@ public class DecDateTimeTests
     [Fact]
     public void GetHashCode_SameValues_ReturnsSameHash()
     {
-        var dt1 = new DecDateTime(2024, 6, 15, 12, 0, 0);
-        var dt2 = new DecDateTime(2024, 6, 15, 12, 0, 0);
+        var dt1 = new DecDateTime(2024, 6, 15, 5, 0, 0);
+        var dt2 = new DecDateTime(2024, 6, 15, 5, 0, 0);
 
         Assert.Equal(dt1.GetHashCode(), dt2.GetHashCode());
     }
@@ -305,7 +320,7 @@ public class DecDateTimeTests
     [Fact]
     public void ImplicitOperator_ToDateTime_Works()
     {
-        DecDateTime decDateTime = new(2024, 6, 15, 12, 0, 0);
+        DecDateTime decDateTime = new(2024, 6, 15, 5, 0, 0);
         DateTime dateTime = decDateTime;
 
         Assert.Equal(new DateTime(2024, 6, 15, 12, 0, 0), dateTime);
@@ -327,30 +342,30 @@ public class DecDateTimeTests
     [Fact]
     public void Addition_WithDecTimeSpan_Works()
     {
-        var decDateTime = new DecDateTime(2024, 6, 15, 12, 0, 0);
+        var decDateTime = new DecDateTime(2024, 6, 15, 5, 0, 0);
         var timeSpan = DecTimeSpan.FromDecimalHours(2.5); // 2.5 decimal hours = 6 standard hours
 
         var result = decDateTime + timeSpan;
 
-        Assert.Equal(18, result.Hour);
+        Assert.Equal(18, result.ToDateTime().Hour);
     }
 
     [Fact]
     public void Subtraction_WithDecTimeSpan_Works()
     {
-        var decDateTime = new DecDateTime(2024, 6, 15, 12, 0, 0);
+        var decDateTime = new DecDateTime(2024, 6, 15, 5, 0, 0);
         var timeSpan = DecTimeSpan.FromDecimalHours(2.5); // 2.5 decimal hours = 6 standard hours
 
         var result = decDateTime - timeSpan;
 
-        Assert.Equal(6, result.Hour);
+        Assert.Equal(6, result.ToDateTime().Hour);
     }
 
     [Fact]
     public void Subtraction_TwoDecDateTimes_ReturnsDecTimeSpan()
     {
-        var dt1 = new DecDateTime(2024, 6, 15, 18, 0, 0);
-        var dt2 = new DecDateTime(2024, 6, 15, 12, 0, 0);
+        var dt1 = new DecDateTime(2024, 6, 15, 7, 50, 0);
+        var dt2 = new DecDateTime(2024, 6, 15, 5, 0, 0);
 
         DecTimeSpan diff = dt1 - dt2;
 
@@ -364,7 +379,7 @@ public class DecDateTimeTests
     [Fact]
     public void ToDecimalTimeString_FormatsCorrectly()
     {
-        var decDateTime = new DecDateTime(2024, 6, 15, 12, 0, 0); // Noon = 5:00:00 decimal
+        var decDateTime = new DecDateTime(2024, 6, 15, 5, 0, 0); // Noon = 5:00:00 decimal
 
         Assert.Equal("5:00:00", decDateTime.ToDecimalTimeString());
     }
@@ -372,7 +387,7 @@ public class DecDateTimeTests
     [Fact]
     public void ToString_IncludesDateAndDecimalTime()
     {
-        var decDateTime = new DecDateTime(2024, 6, 15, 12, 0, 0);
+        var decDateTime = new DecDateTime(2024, 6, 15, 5, 0, 0);
         var result = decDateTime.ToString();
 
         Assert.Contains("2024-06-15", result);
