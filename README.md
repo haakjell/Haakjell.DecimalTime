@@ -2,6 +2,10 @@
 
 A .NET library that provides decimal (metric) time functionality through the `DecDateTime`, `DecTimeSpan`, and `DecTimeOnly` types.
 
+## Disclaimer
+
+**This package is completely useless, unless you really like decimal time.** ;)
+
 ## Decimal Time System
 
 In decimal time:
